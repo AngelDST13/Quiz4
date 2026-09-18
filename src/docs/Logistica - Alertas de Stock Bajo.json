@@ -1,0 +1,171 @@
+{
+  "name": "Logistica - Alertas de Stock Bajo",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -688,
+        112
+      ],
+      "id": "fa7137b3-fce2-4688-a22c-9744b69185f4",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  { json: { id_producto: \"PROD-001\", producto: \"Aceite Sintético 10W40\", stock_actual: 5, stock_minimo: 15 } },\n  { json: { id_producto: \"PROD-002\", producto: \"Filtro de Aire Universal\", stock_actual: 42, stock_minimo: 10 } },\n  { json: { id_producto: \"PROD-003\", producto: \"Bujía de Iridio\", stock_actual: 2, stock_minimo: 20 } },\n  { json: { id_producto: \"PROD-004\", producto: \"Pastillas de Freno\", stock_actual: 18, stock_minimo: 8 } }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -464,
+        112
+      ],
+      "id": "340986a6-306b-407d-86fa-f093f5756044",
+      "name": "Obtener Inventario"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond-stock-check",
+              "leftValue": "={{ $json.stock_actual }}",
+              "rightValue": "={{ $json.stock_minimo }}",
+              "operator": {
+                "type": "number",
+                "operation": "lessThanEqual"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        112
+      ],
+      "id": "3772e33b-59f5-49e1-a8dc-772ea9e621f4",
+      "name": "evaluar_stock_minimo"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "assign-urgent-status",
+              "name": "alerta",
+              "value": "REORDEN URGENTE",
+              "type": "string"
+            },
+            {
+              "id": "assign-product-name",
+              "name": "producto",
+              "value": "={{ $json.producto }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-current-stock",
+              "name": "stock_actual",
+              "value": "={{ $json.stock_actual }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f90758b8-3952-4de8-86bc-74e89ee3e418",
+      "name": "Notificar Reorden Urgente"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        0,
+        208
+      ],
+      "id": "01869070-3042-4249-8590-a3e559f88cf0",
+      "name": "Stock Suficiente"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Obtener Inventario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Inventario": {
+      "main": [
+        [
+          {
+            "node": "evaluar_stock_minimo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "evaluar_stock_minimo": {
+      "main": [
+        [
+          {
+            "node": "Notificar Reorden Urgente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stock Suficiente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "35e5bcec-f885-40fa-bdaf-e0bce7ec83cb",
+  "meta": {
+    "instanceId": "9110809b3eaa6ce2e9c5a3df7f20f0e6e28606874e004928c72e7acad97f0d0d"
+  },
+  "nodeGroups": [],
+  "id": "jTf6Y6SibHBY6k6r",
+  "tags": []
+}
